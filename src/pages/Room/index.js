@@ -18,7 +18,7 @@ function layout(clientsNumber = 1) {
 
     if (index === arr.length - 1 && row.length === 1) {
       return [{
-        width: '100%',
+        width: '35%',
         height,
       }];
     }

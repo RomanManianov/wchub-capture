@@ -104,5 +104,5 @@ app.get('*', (req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log('Server Started!')
+  console.log('Сервер стартанул, братишка!')
 })

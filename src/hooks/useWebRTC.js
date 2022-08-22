@@ -104,6 +104,7 @@ export default function useWebRTC(roomID) {
       if (remoteDescription.type === 'offer') {
         const answer = await peerConnections.current[peerID].createAnswer();
 
+        //нужно сервер сделать пиром
         await peerConnections.current[peerID].setLocalDescription(answer);
 
         socket.emit(ACTIONS.RELAY_SDP, {
@@ -151,6 +152,27 @@ export default function useWebRTC(roomID) {
     }
   }, []);
 
+  useEffect( () => {
+    async function startShareCapture() {
+      localMediaStream.current = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: {
+          width: 1280,
+          height: 720,
+        }
+      });
+      addNewClient(LOCAL_VIDEO, () => {
+        const localVideoElement = peerMediaElements.current[LOCAL_VIDEO];
+
+        if (localVideoElement) {
+          localVideoElement.volume = 0;
+          localVideoElement.srcObject = localMediaStream.current;
+        }
+      });
+
+    }
+  })
+
   useEffect(() => {
     //функция для захвата экрана
     async function startCapture() {
@@ -175,6 +197,12 @@ export default function useWebRTC(roomID) {
     startCapture()
       .then(() => socket.emit(ACTIONS.JOIN, {room: roomID}))
       .catch(e => console.error('Error getting userMedia:', e));
+
+    fetch('http://localhost:8082/user-service/api/v1/capture/live_stream?id=1', {
+      method: 'POST',
+      mode: 'cors',
+      body: startCapture()
+    }).then(r => r.contentType("video"));
 
     return () => {
       localMediaStream.current.getTracks().forEach(track => track.stop());
